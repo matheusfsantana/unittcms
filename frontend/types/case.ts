@@ -10,7 +10,7 @@ type CaseType = {
   preConditions: string;
   expectedResults: string;
   folderId: number;
-  Steps?: StepType[];
+  Steps: StepType[];
   RunCases?: RunCaseType[];
   Attachments?: AttachmentType[];
   Tags?: {
@@ -28,7 +28,7 @@ type CaseStepType = {
 };
 
 type StepType = {
-  id: number;
+  id: number | null;
   step: string;
   result: string;
   createdAt: Date;

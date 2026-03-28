@@ -67,6 +67,8 @@ export default function CaseEditor({
   useFormGuard(isDirty, messages.areYouSureLeave);
 
   const onPlusClick = async (newStepNo: number) => {
+    if (!testCase.Steps) return;
+
     setIsDirty(true);
     const newStep: StepType = {
       id: null,
@@ -104,17 +106,15 @@ export default function CaseEditor({
   };
 
   const onDeleteClick = async (stepUid: string) => {
+    if (!testCase.Steps) return;
     setIsDirty(true);
 
     const deletedStep = testCase.Steps.find((step) => step.uid === stepUid);
-    if (!deletedStep) {
-      return;
-    }
-    const deletedStepNo = deletedStep.caseSteps.stepNo;
-    // Delete step from array
-    testCase.Steps = testCase.Steps.filter((step) => step.uid !== stepUid);
+    if (!deletedStep) return;
 
-    const updatedSteps = testCase.Steps.map((step) => {
+    const deletedStepNo = deletedStep.caseSteps.stepNo;
+
+    const updatedSteps = testCase.Steps.filter((step) => step.uid !== stepUid).map((step) => {
       if (step.caseSteps.stepNo > deletedStepNo) {
         return {
           ...step,
@@ -195,6 +195,8 @@ export default function CaseEditor({
       changeStep.editState = 'changed';
       setIsDirty(true);
     }
+
+    if (!testCase.Steps) return;
 
     setTestCase({
       ...testCase,

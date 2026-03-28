@@ -13,7 +13,7 @@ export default function (sequelize) {
   const { verifyProjectDeveloperFromCaseId } = editableMiddleware(sequelize);
 
   router.post('/update', verifySignedIn, verifyProjectDeveloperFromCaseId, async (req, res) => {
-    const caseId = req.query.caseId;
+    const caseId = Number(req.query.caseId);
     const steps = req.body;
     const t = await sequelize.transaction();
 
@@ -37,16 +37,22 @@ export default function (sequelize) {
     };
 
     const updateStep = async (step) => {
-      await Step.update(step, {
-        where: { id: step.id },
-        transaction: t,
-      });
+      await Step.update(
+        {
+          step: step.step,
+          result: step.result,
+        },
+        {
+          where: { id: step.id },
+          transaction: t,
+        }
+      );
       await CaseStep.update(
         {
           stepNo: step.caseSteps.stepNo,
         },
         {
-          where: { stepId: step.id },
+          where: { caseId, stepId: step.id },
           transaction: t,
         }
       );
@@ -55,7 +61,7 @@ export default function (sequelize) {
 
     const deleteCaseStep = async (caseStep) => {
       await CaseStep.destroy({
-        where: { stepId: caseStep.stepId },
+        where: { caseId, stepId: caseStep.stepId },
         transaction: t,
       });
       await Step.destroy({
@@ -66,7 +72,10 @@ export default function (sequelize) {
     };
 
     try {
-      const existingCaseSteps = await CaseStep.findAll({ where: { caseId: caseId } }, { transaction: t });
+      const existingCaseSteps = await CaseStep.findAll({
+        where: { caseId: caseId },
+        transaction: t,
+      });
       const stepsIdsFromRequest = steps.filter((step) => step.id != null).map((step) => step.id);
       const caseStepsToDelete = existingCaseSteps.filter(
         (existingStep) => !stepsIdsFromRequest.includes(existingStep.stepId)
